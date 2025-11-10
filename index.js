@@ -23,9 +23,21 @@ async function run() {
     await client.connect();
     const db = client.db("eco-track");
     challengesCollection = db.collection("challenges");
+    recentTipsCollection = db.collection('recent-tips')
+    recentEventCollection = db.collection('event')
 
     app.get("/challenges", async (req, res) => {
       const result = await challengesCollection.find().toArray();
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/recent-tips", async (req, res) => {
+      const result = await recentTipsCollection.find().toArray();
+      console.log(result);
+      res.send(result);
+    });
+    app.get("/event", async (req, res) => {
+      const result = await recentEventCollection.find().toArray();
       console.log(result);
       res.send(result);
     });
