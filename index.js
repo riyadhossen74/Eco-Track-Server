@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -23,12 +23,18 @@ async function run() {
     await client.connect();
     const db = client.db("eco-track");
     challengesCollection = db.collection("challenges");
-    recentTipsCollection = db.collection('recent-tips')
-    recentEventCollection = db.collection('event')
+    recentTipsCollection = db.collection("recent-tips");
+    recentEventCollection = db.collection("event");
 
     app.get("/challenges", async (req, res) => {
       const result = await challengesCollection.find().toArray();
       console.log(result);
+      res.send(result);
+    });
+    app.get("/challenges/:id", async (req, res) => {
+      const id = req.params;
+      console.log(id);
+      const result = await challengesCollection.findOne({_id: new ObjectId(id)})
       res.send(result);
     });
     app.get("/recent-tips", async (req, res) => {
