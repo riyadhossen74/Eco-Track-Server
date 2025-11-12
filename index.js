@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion,  ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -25,18 +25,91 @@ async function run() {
     challengesCollection = db.collection("challenges");
     recentTipsCollection = db.collection("recent-tips");
     recentEventCollection = db.collection("event");
+    ChallengesJoin = db.collection("join");
 
     app.get("/challenges", async (req, res) => {
       const result = await challengesCollection.find().toArray();
       console.log(result);
       res.send(result);
     });
+    app.post("/challenges", async (req, res) => {
+      const data = req.body;
+      const result = await challengesCollection.insertOne(data);
+      res.send(result);
+    });
     app.get("/challenges/:id", async (req, res) => {
       const id = req.params;
       console.log(id);
-      const result = await challengesCollection.findOne({_id: new ObjectId(id)})
+      const result = await challengesCollection.findOne({
+        _id: new ObjectId(id),
+      });
       res.send(result);
     });
+    app.get("/my-activities/:id", async (req, res) => {
+      const id = req.params;
+      console.log(id);
+      const result = await ChallengesJoin.findOne({
+        _id: new ObjectId(id),
+      });
+      res.send(result);
+    });
+    
+    app.get("/challenges/join", async (req, res) => {
+      const result = await ChallengesJoin.find().toArray();
+      console.log(result);
+      res.send(result);
+    });
+    app.post("/challenges/join", async (req, res) => {
+      const data = req.body;
+      const result = await ChallengesJoin.insertOne(data);
+      res.send(result);
+    });
+    app.get("/challenges/join/:id", async (req, res) => {
+      const userId = req.params.id;
+      const query = {
+        userId: userId,
+      };
+      const cursor = ChallengesJoin.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    
+    app.get("/my-activities", async (req, res) => {
+      const query = {};
+      if (query.userId) {
+        query.userId = userId;
+      }
+
+      const cursor = ChallengesJoin.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.delete('/my-activities/:id', async(req, res) =>{
+       
+     const id =req.params.id
+      const  query ={ _id: new ObjectId(id)}
+      const result = await ChallengesJoin.deleteOne(query)
+      res.send(result)
+    })
+
+    app.patch("/my-activities/:id", async (req, res) => {
+      const  id  = req.params.id;
+       const data = req.body
+      
+      const query = {_id: new ObjectId(id)}
+      const update = {
+        $set: {
+          status: data.status,
+          progress: data.progress
+        }
+      }
+      const options = {}
+      
+      const result = await ChallengesJoin.updateOne(query, update, options );
+      res.send(result)
+    });
+
     app.get("/recent-tips", async (req, res) => {
       const result = await recentTipsCollection.find().toArray();
       console.log(result);
