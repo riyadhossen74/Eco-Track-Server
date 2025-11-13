@@ -1,15 +1,16 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion,  ObjectId } = require("mongodb");
-require('dotenv').config()
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
-
+console.log(process.env);
 app.use(cors());
 app.use(express.json());
 
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.cymbxlh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+// const uri = `mongodb+srv://eco-track:3ubWeuL1ObeBTDGt@cluster0.cymbxlh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
-const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.cymbxlh.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -23,10 +24,10 @@ async function run() {
   try {
     await client.connect();
     const db = client.db("eco-track");
-    challengesCollection = db.collection("challenges");
-    recentTipsCollection = db.collection("recent-tips");
-    recentEventCollection = db.collection("event");
-    ChallengesJoin = db.collection("join");
+   const challengesCollection = db.collection("challenges");
+   const recentTipsCollection = db.collection("recent-tips");
+   const recentEventCollection = db.collection("event");
+   const ChallengesJoin = db.collection("join");
 
     app.get("/challenges", async (req, res) => {
       const result = await challengesCollection.find().toArray();
@@ -54,7 +55,7 @@ async function run() {
       });
       res.send(result);
     });
-    
+
     app.get("/challenges/join", async (req, res) => {
       const result = await ChallengesJoin.find().toArray();
       console.log(result);
@@ -74,7 +75,7 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    
+
     app.get("/my-activities", async (req, res) => {
       const query = {};
       if (query.userId) {
@@ -86,29 +87,28 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/my-activities/:id', async(req, res) =>{
-       
-     const id =req.params.id
-      const  query ={ _id: new ObjectId(id)}
-      const result = await ChallengesJoin.deleteOne(query)
-      res.send(result)
-    })
+    app.delete("/my-activities/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await ChallengesJoin.deleteOne(query);
+      res.send(result);
+    });
 
     app.patch("/my-activities/:id", async (req, res) => {
-      const  id  = req.params.id;
-       const data = req.body
-      
-      const query = {_id: new ObjectId(id)}
+      const id = req.params.id;
+      const data = req.body;
+
+      const query = { _id: new ObjectId(id) };
       const update = {
         $set: {
           status: data.status,
-          progress: data.progress
-        }
-      }
-      const options = {}
-      
-      const result = await ChallengesJoin.updateOne(query, update, options );
-      res.send(result)
+          progress: data.progress,
+        },
+      };
+      const options = {};
+
+      const result = await ChallengesJoin.updateOne(query, update, options);
+      res.send(result);
     });
 
     app.get("/recent-tips", async (req, res) => {
